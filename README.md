@@ -1,5 +1,5 @@
-# turnos
-Scheduling Web App
-DB: MySQL
-BACK: PHP
-FRONT: Jquery / Bootstrap
+**turnos** - Scheduling Web App
+
+* DB: MySQL
+* BACK: PHP
+* FRONT: Jquery / Bootstrap
