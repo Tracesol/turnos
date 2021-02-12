@@ -1,0 +1,162 @@
+<style>
+#tabla{
+	text-align: center;
+}
+#tabla th:nth-child(1),#tabla td:nth-child(1){
+	text-align: left;
+}
+</style>
+<h3 class="text-center my-3">Gestión de Socios</h3>
+<table class="table table-condensed table-bordered my-3" id="tabla">
+	<thead class="thead-dark">
+		<tr><th>Nombre Completo</th><th>email</th><th>Teléfono</th><th>Activo</th><th>Acción</th></tr>
+	</thead>
+	<tbody style="background-color: white;">
+	</tbody>
+	<tfoot>
+		<tr><td class="text-center bg-white" colspan="5"><button class="btn btn-primary" id="additem"><i class="fa fa-plus"></i></button></td></tr>
+	</tfoot>
+</table>
+
+<script>
+	$.ajax({
+		url:"jsonsocios.php",
+		type:"GET"
+	}).done(function(resp){
+		let cad='';
+		resp.forEach(el => {
+			cad+='<tr data-userid="'+el.id+'"><td>'+el.nombre+'</td><td>'+el.email+'</td><td>'+el.telefono+'</td><td>'+el.activo+'</td><td><button class="btn btn-info edit"><i class="fa fa-pencil"></i></button>&nbsp;<button class="btn btn-danger delete"><i class="fa fa-trash"></i></button></td></tr>';
+		});
+		$("#tabla tbody").empty().append(cad);
+	});
+
+	$(document).on("click","#tabla .delete",function(){
+		var padre=$(this).parents("tr");
+		var id=padre.data("userid");
+		$("#modaltitu").html("Atención");
+		$("#modalbody").html("Desea eliminar al socio?");
+		$("#modalaceptar").removeClass("d-none");
+		$("#modalaceptar").on("click",function(){
+			$.ajax({
+				url:"jsonedit.php",
+				type:"POST",
+				data:{"tabla":"socios","op":"del","filtro":"id="+id}
+			}).done(function(resp){
+				console.log("resp");
+				console.log(resp);
+				if(resp.rta == "OK")
+					padre.remove();
+				else
+					alert("Error al borrar.");
+				$("#modal").modal("toggle");
+			})
+		});
+		$("#modal").modal("toggle");
+	});
+
+
+	$("#additem").click(function(){
+		$("#modaltitu").html("Agregar socio");
+		var cad=`
+			<form id="modalformu">
+				<div class="form-group">
+					<label for="email">email</label>
+					<input type="input" class="form-control" data-campo="email" max-lenght="100">
+				</div>
+				<div class="form-group">
+					<label for="nombre">Nombre Completo</label>
+					<input type="input" class="form-control" data-campo="nombre" max-lenght="100">
+				</div>
+				<div class="form-group">
+					<label for="nombre">Teléfono</label>
+					<input type="text" class="form-control" data-campo="telefono" max-lenght="20">
+				</div>
+				<div class="form-group">
+					<label for="activo">Activo</label>
+					<select class="form-control" data-campo="activo"><option value="Si">Si</option><option value="No">No</option></select>
+				</div>
+			</form>
+		`;
+		$("#modalbody").html(cad);
+		$("#modalaceptar").removeClass("d-none");
+		$("#modalaceptar").on("click",function(){
+			var f={};
+			$("#modal .form-control").each(function(){
+				f[$(this).data("campo")]=$(this).val();
+			});
+			var d={"tabla":"socios","op":"ins","parametros":f}
+			$.ajax({
+				url:"jsonedit.php",
+				type:"POST",
+				data:d
+			}).done(function(resp){
+				console.log("resp");
+				console.log(resp);
+				if(resp.rta == "OK")
+					$("#tabla tbody").append('<tr data-userid="'+resp.idmax+'"><td>'+f.nombre+'</td><td>'+f.email+'</td><td>'+f.telefono+'</td><td>'+f.activo+'</td><td><button class="btn btn-info edit"><i class="fa fa-pencil"></i></button>&nbsp;<button class="btn btn-danger delete"><i class="fa fa-trash"></i></button></td></tr>');
+				else
+					alert("Error al agregar.");
+				$("#modal").modal("toggle");
+			})
+		});
+		$("#modal").modal("toggle");
+	});
+
+
+
+
+	$(document).on("click",".edit",function(){
+		$("#modaltitu").html("Editar Socio");
+		var padre=$(this).parents("tr");
+		console.log("nombre");
+		console.log(padre.find("td:nth-child(2)").text());
+		var cad=`
+			<form id="modalformu">
+				<div class="form-group">
+					<label for="email">email</label>
+					<input type="text" class="form-control" data-campo="email" max-lenght="100" value="`+padre.find("td:nth-child(2)").text()+`">
+				</div>
+				<div class="form-group">
+					<label for="nombre">Nombre Completo</label>
+					<input type="text" class="form-control" data-campo="nombre" max-lenght="100" value="`+padre.find("td:nth-child(1)").text()+`">
+				</div>
+				<div class="form-group">
+					<label for="celu">Teléfono</label>
+					<input type="text" class="form-control" data-campo="telefono" max-lenght="20" value="`+padre.find("td:nth-child(3)").text()+`">
+				</div>
+				<div class="form-group">
+					<label for="activo">Activo</label>
+					<select class="form-control" data-campo="activo" name="activo"><option value="Si">Si</option><option value="No">No</option></select>
+				</div>
+			</form>
+		`;
+		$("#modalbody").html(cad);
+        console.log("coso");
+        console.log(padre.find("td:nth-child(4)").text());
+        $("#modalbody .form-control[name='activo']").val(padre.find("td:nth-child(4)").text());
+		$("#modal").find("#nivel").val(padre.find("td:nth-child(4)").text());
+		$("#modalaceptar").removeClass("d-none");
+		$("#modalaceptar").on("click",function(){
+			var f={};
+			$("#modal .form-control").each(function(){
+    			f[$(this).data("campo")]=$(this).val();
+			});
+			var d={"tabla":"socios","op":"upd","filtro":"id="+padre.data("userid"),"set":"nombre=:nombre,email=:email,telefono=:telefono,activo=:activo","parametros":f}
+			$.ajax({
+				url:"jsonedit.php",
+				type:"POST",
+				data:d
+			}).done(function(resp){
+				console.log("resp");
+				console.log(resp);
+				if(resp.rta == "OK")
+					location.reload();
+				else
+					alert("Error al editar.");
+				$("#modal").modal("toggle");
+			})
+		});
+		$("#modal").modal("toggle");
+	});
+
+</script>

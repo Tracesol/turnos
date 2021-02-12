@@ -1,0 +1,24 @@
+<h5>Pagar Videoconsulta con Paypal</h5>
+<div class="row"><div class="col-1">Fecha:</div><div class="col-11"><strong><span id="pagafecha"></span></strong></div></div>
+<div class="row"><div class="col-1">Hora:</div><div class="col-11"><strong><span id="pagahora"></span></strong></div></div>
+<div class="row"><div class="col-1">Vet:</div><div class="col-11"><strong><span id="pagavet"></span></strong></div></div><br>
+<form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_top">
+<input type="hidden" name="cmd" value="_s-xclick">
+<input type="hidden" name="hosted_button_id" value="E4NX9AQ2XMA7W">
+<input type="image" src="https://www.paypalobjects.com/es_XC/i/btn/btn_paynowCC_LG.gif" border="0" name="submit" alt="PayPal, la forma más segura y rápida de pagar en línea.">
+<img alt="" border="0" src="https://www.paypalobjects.com/es_XC/i/scr/pixel.gif" width="1" height="1">
+</form>
+
+<script>
+  let ls=localStorage.getItem("pedido");
+  if(ls != null){
+      let pedido=JSON.parse(ls);
+      let f=pedido.fechahora;
+      let d=new Date(f);
+
+//      document.querySelector("#aclaracion").innerHTML='la consulta del ' + (d<10?("0"+d):(d)) + '/' + f.substr(5,2) + ' a ' +pedido.profname + ' ';
+      document.querySelector("#pagafecha").innerHTML=d.toLocaleDateString();
+      document.querySelector("#pagahora").innerHTML=d.toLocaleTimeString();
+      document.querySelector("#pagavet").innerHTML=pedido.profname;
+  }
+</script>

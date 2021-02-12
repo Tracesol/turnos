@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="es">
+	<head>
+	<meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Sistema de Gestión de VideoConsultas</title>
+    <link href="fonts/roboto/roboto.css" rel="stylesheet"> 
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <script src="js/jquery.min.js"></script> 
+    <script src="js/popper.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <link rel="stylesheet" href="fonts/fontawesome/css/fontawesome-all.min.css"/>
+    <link href="css/styles.css" rel="stylesheet"> 
+</head>
+<body>
+    <div class="container p-0" id="contbase">
+        <nav class="navbar navbar-expand-lg navbar-light bg-light">
+            <a class="navbar-brand" href="index.html?p=turnos"><img src="images/logo.png" width="30" height="30" class="d-inline-block align-top" alt="" loading="lazy"></a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            </div>
+        </nav>
+        <div class="wrapper p-3" id="cont">
+            <h3>Recepción de Pagos</h3>
+            <div id="rta"></div>
+            <button class="btn btn-success my-4" onclick="location.assign('index.html?p=turnos')"><i class="fa fa-arrow-left"></i> Volver</button>
+        </div>
+    </div>
+    <div class="modal" id="loading" style="background:url('loading.gif') no-repeat center fixed;background-size:cover;opacity:0.6;"></div>
+    <div class="modal" tabindex="-1" role="dialog" id="modal">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="modaltitu">Modal title</h5>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body" id="modalbody">
+              <p>Modal body text goes here.</p>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-danger d-none" id="modalaceptar">Aceptar</button>
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+            </div>
+          </div>
+        </div>
+      </div>
+</body>
+<script>
+    let rta=document.querySelector("#rta");
+    
+    let ls=window.localStorage.getItem("pedido");
+
+    let objpago={};
+    if(ls != null){
+        objpago=JSON.parse(ls);
+    }
+
+    let telefono=typeof objpago.telefono === "undefined" ? "" : objpago.telefono;
+    let parametros=getUrlVars();
+    console.log("parametros");
+    console.log(parametros);
+    if(typeof parametros.estado === "undefined"){
+        rta.innerHTML="Error al procesar pago. Por favor, reintente o llámenos " +  ((telefono != '') ? ("al " + telefono) : "");
+    }else{
+        console.log("parametros");
+        console.log(parametros.estado);
+        if(parametros.estado == "ok"){
+            rta.innerHTML="Pago recibido. Nos comunicaremos para confirmar solicitud.";
+            let d={"tabla":"turnos","op":"upd","set":"estado='Pagado'","filtro":"id="+objpago.idturno,"parametros":null};
+
+            $.ajax({
+                url:"jsonedit.php",
+                type:"POST",
+                data:d
+            }).done((resp)=>{
+                console.log("pagado");
+                console.log(resp);
+            });
+        }else if(parametros.estado == "enproceso"){
+            rta.innerHTML="Pago en Proceso. Nos comunicaremos al acreditarse el pago.";
+            let d={"tabla":"turnos","op":"upd","set":"estado='En Proceso'","filtro":"id="+objpago.idturno,"parametros":null};
+            $.ajax({
+                url:"jsonedit.php",
+                type:"POST",
+                data:d
+            }).done((resp)=>{
+                console.log("pagado");
+                console.log(resp);
+            });
+        }else{
+            rta.innerHTML="Pago NO Recibido. Por favor llámenos para solucionar el inconveniente";
+        }
+        let data={"estado":parametros.estado, "obj":ls};
+        $.ajax({
+            url:"email.php",
+            type:"POST",
+            data:data
+        }).done((resp)=>{
+            console.log("resp email");
+            console.log(resp);
+        });
+    }
+
+    function getUrlVars() {
+        let vars = {};
+        let parts = window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi, function(m,key,value) {
+            vars[key] = decodeURIComponent((value + '').replace(/\+/g, '%20'));
+        });
+    
+        return vars;
+    }
+
+</script>
+</html>
+

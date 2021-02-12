@@ -1,0 +1,13 @@
+<h5>Estimado/a <span id="socio"></span></h5>
+<p>Recibirá por email el enlace a la Videoconsulta. Gracias por seguir confiando en <strong>Vet24</strong>!!!<br><br></p>
+<div class="text-center"><button class="btn btn-success" onclick="location.assign('index.html')"><i class="fa fa-arrow-left"></i> Volver</button></div>
+
+<script>
+  let ls=localStorage.getItem("pedido");
+  if(ls != null){
+      let pedido=JSON.parse(ls);
+      let f=pedido.fechahora;
+      document.querySelector("#socio").innerHTML=pedido.nombre + ': La consulta del ' + f.substr(8,2) + '/' + f.substr(5,2) + ' a ' +pedido.profname + ' está CONFIRMADA.';
+  }
+</script>
+

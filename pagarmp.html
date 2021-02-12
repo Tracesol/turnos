@@ -1,0 +1,25 @@
+<h5>Pagar Videoconsulta con MercadoPago</h5>
+<div class="row"><div class="col-1">Fecha:</div><div class="col-11"><strong><span id="pagafecha"></span></strong></div></div>
+<div class="row"><div class="col-1">Hora:</div><div class="col-11"><strong><span id="pagahora"></span></strong></div></div>
+<div class="row"><div class="col-1">Vet:</div><div class="col-11"><strong><span id="pagavet"></span></strong></div></div><br>
+
+<button class="btn btn-info" id="pagarmp" onclick="mp()">Pagar</button>
+<script>
+  let ls=localStorage.getItem("pedido");
+  if(ls != null){
+      let pedido=JSON.parse(ls);
+      let f=pedido.fechahora;
+      let d=new Date(f);
+
+//      document.querySelector("#aclaracion").innerHTML='la consulta del ' + (d<10?("0"+d):(d)) + '/' + f.substr(5,2) + ' a ' +pedido.profname + ' ';
+      document.querySelector("#pagafecha").innerHTML=d.toLocaleDateString();
+      document.querySelector("#pagahora").innerHTML=d.toLocaleTimeString();
+      document.querySelector("#pagavet").innerHTML=pedido.profname;
+  }
+  
+  function mp(){
+    location.assign("https://www.mercadopago.com.ar/checkout/v1/redirect?pref_id=280186262-49104583-8c24-41a5-9e1e-cc76055764a4");
+    return;
+  }
+
+</script>

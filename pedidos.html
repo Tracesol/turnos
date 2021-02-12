@@ -1,0 +1,80 @@
+<style>
+    #criterio .active{
+        background-color: yellow;
+        color:black;
+    }
+    #turnosdados{
+		text-align:center;
+	}
+    #turnosdados th:nth-child(1),#turnosdados td:nth-child(1){
+		text-align:left;
+	}
+	.Pagado{
+		background-color:lime;
+	}
+	.proceso{
+		background-color:yellow;
+	}	
+</style>
+<div class="jumbotron py-3 px-1">
+    <h3 class="text-center my-3">Listado de Turnos Pedidos</h3>
+    <table class="table table-condensed table-sm table-bordered bg-white" id="turnosdados"><thead class="thead-dark"><tr><th>Veterinario/a</th><th>Día</th><th>Hora</th><th>Nombre</th><th>Teléfono</th><th>Estado</th><th>Pais</th><th>Links</th><th>Eliminar</th></tr></thead><tbody></tbody></table></div></div>
+</div>
+<script>
+    var turnosDados=[];
+    $.ajax({
+        url:"jsonprof.php",
+        type:"GET"
+    }).done((response)=>{
+        console.log("resp");
+        console.log(response);
+        let cad='';
+        var resp=response.turnosdados
+        for(var i in resp){
+            let vetdata={"yourName":resp[i].profname,"yourId":resp[i].prof,"targetId":str2Hexa(resp[i].email),"targetName":resp[i].nombre,"osocial":"NA","soy":"consultor","r":Math.random(),"business":1001};
+            let userdata={"yourName":resp[i].nombre,"yourId":str2Hexa(resp[i].email),"targetId":resp[i].prof,"targetName":resp[i].profname,"osocial":"NA","soy":"cliente","r":Math.random(),"business":1001};
+            let linkvet=encodeURIComponent('https://doxvir.web.app/sivet.html?d='+JSON.stringify(vetdata));
+            let linkuser=encodeURIComponent('https://doxvir.web.app/sivet.html?d='+JSON.stringify(userdata));
+            cad+='<tr data-idturno="'+resp[i].id+'"><td>'+resp[i].profname+'</td><td>'+resp[i].dia.substr(0,5)+'</td><td>'+resp[i].hora.substr(0,5)+'</td>';
+            cad+='<td>'+resp[i].nombre+'</td><td>'+resp[i].telefono+'</td>';
+            cad+='<td class="'+((resp[i].estado == "En Proceso")?("proceso"):(resp[i].estado))+'">'+resp[i].estado+'</td><td>'+resp[i].pais+'</td>';
+            cad+='<td><button class="btn btn-warning" onclick="abroWeb(\''+linkvet+'\')">Vet</button><button class="btn btn-secondary mx-1" onclick="abroWeb(\''+linkuser+'\')">Clien</button></td>';
+            cad+='<td><button class="btn btn-danger cancelar" title="Cancelar"><i class="fa fa-trash"></i></button></td></tr>';
+        }
+        $("#turnosdados tbody").empty().append(cad);
+    });
+
+    function abroWeb(url){
+        console.log("abroWeb " + decodeURIComponent( url));
+        window.open(decodeURIComponent( url));
+    }
+
+    $(document).on("click",".cancelar",function(){
+        let x=confirm("Desea cancelar el Turno?");
+        if(!x)
+            return;
+        let padre=$(this).parents("tr");
+        let idturno=padre.data("idturno");
+        let data={"tabla":"turnos","op":"upd","set":"estado='Cancelado'","filtro":"id="+idturno};
+        $.ajax({
+            url:"jsonedit.php",
+            type:"POST",
+            data:data
+        }).done(function(resp){
+            if(resp.rta == "OK")
+                padre.remove();
+            else
+                alerta("Error","No se pudo eliminar el turno.");
+        });
+    });
+
+
+    function str2Hexa(cad){
+        var entero="";
+        for(var i=0;i<cad.length;i++)
+            entero+= cad.charCodeAt(i).toString(16) ;
+        return entero;
+	}
+
+
+</script>
